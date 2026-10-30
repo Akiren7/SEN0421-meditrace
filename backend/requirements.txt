@@ -1,0 +1,7 @@
+# SOUP list — versions will be pinned in Report #2 (IEC 62304 Clause 8.1.2)
+fastapi
+uvicorn
+pydantic
+cryptography
+argon2-cffi
+pytest
