@@ -1,0 +1,18 @@
+name: Requirement / task
+description: New or changed requirement, or a planned work item
+labels: ["requirement"]
+body:
+  - type: input
+    id: id
+    attributes: {label: ID, placeholder: "REQ-xxx or PLN-xx"}
+    validations: {required: true}
+  - type: textarea
+    id: description
+    attributes: {label: Description}
+    validations: {required: true}
+  - type: textarea
+    id: acceptance
+    attributes: {label: Acceptance criteria}
+  - type: input
+    id: standard
+    attributes: {label: Related standard clause, placeholder: "e.g. IEC 62304 5.2"}

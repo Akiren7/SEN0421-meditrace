@@ -1,0 +1,20 @@
+name: Bug / anomaly
+description: Report a software problem (IEC 62304 Clause 9 – problem resolution)
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes: {label: What happened?, description: Observed behaviour and expected behaviour}
+    validations: {required: true}
+  - type: textarea
+    id: steps
+    attributes: {label: Steps to reproduce}
+  - type: input
+    id: trace
+    attributes: {label: Related IDs, placeholder: "REQ-xxx / RISK-xxx / TC-xxx"}
+  - type: dropdown
+    id: safety
+    attributes:
+      label: Could this affect patient safety?
+      options: ["No", "Yes – evaluate against the risk file", "Unknown"]
+    validations: {required: true}
