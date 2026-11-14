@@ -1,7 +1,19 @@
-# SOUP list — versions will be pinned in Report #2 (IEC 62304 Clause 8.1.2)
-fastapi
-uvicorn
-pydantic
-cryptography
-argon2-cffi
-pytest
+# MediTrace SOUP list (IEC 62304 Clause 8.1.2 - Software Of Unknown Provenance).
+# Every third-party package is pinned to the exact version the team installed and
+# tested with (Python 3.12). Do not upgrade a version without updating
+# docs/architecture/soup.md and re-running all tests; mention SOUP changes in the PR.
+# Only the Backend & Security Developer edits this file (team rule, A8.5).
+
+# Runtime
+fastapi==0.162.7
+uvicorn==0.54.0
+pydantic==2.14.3
+sqlalchemy==2.1.8
+psycopg[binary]==3.3.9
+cryptography==50.0.2
+argon2-cffi==25.1.0
+
+# Test / tooling (also used by simulator/simulator.py: httpx)
+pytest==9.2.0
+httpx==0.28.1
+httpx2==2.16.0
