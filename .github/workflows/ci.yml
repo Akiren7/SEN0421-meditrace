@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
 jobs:
+  # Job name `tests` is kept: the branch ruleset may require it.
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -11,5 +12,39 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r backend/requirements.txt httpx
-      - run: pytest -q
+      # pytest-cov is pinned here until it is added to backend/requirements.txt (PLN-08, Bahadır).
+      - run: pip install -r backend/requirements.txt httpx pytest-cov==7.1.0
+      # Settings (testpaths, pythonpath, -q) come from pytest.ini. --cov-branch also measures
+      # branch coverage (IEEE 1012 integrity level 3 target for ARC-002/ARC-003, test plan §3).
+      - run: pytest --cov=backend/app --cov-branch --cov-report=term --junitxml=report.xml
+      # JUnit result for the Compliance Reporter (ARC-009, REQ-016): uploaded even when tests
+      # fail, so a FAILING requirement is visible in the traceability matrix (RCM-010).
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-junit
+          path: report.xml
+          if-no-files-found: error
+
+  # Dashboard (ARC-008): Vitest + React Testing Library, then a production build.
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # Node 22 LTS, the version the dashboard was verified with
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # Also writes a JUnit file so the Compliance Reporter can read Vitest results later (Sprint 3).
+      - run: npm test -- --run --reporter=default --reporter=junit --outputFile.junit=vitest-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-junit
+          path: frontend/vitest-report.xml
+      - run: npm run build
