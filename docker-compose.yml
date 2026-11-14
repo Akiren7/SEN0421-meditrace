@@ -1,0 +1,54 @@
+# MediTrace local stack: PostgreSQL 16 + FastAPI backend (Sprint 2).
+#
+#   cp .env.example .env      # then replace the dummy keys (never commit .env)
+#   docker compose up
+#   python simulator/simulator.py --url http://localhost:8000 --patients 5
+#
+# API: http://localhost:8000 (OpenAPI docs: http://localhost:8000/docs)
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-meditrace}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (copy .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-meditrace}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Uncomment to inspect the raw (encrypted) tables from the host, e.g. for TC-010:
+    # ports:
+    #   - "5432:5432"
+
+  api:
+    image: python:3.12-slim
+    working_dir: /app/backend
+    command: >
+      sh -c "pip install --disable-pip-version-check --root-user-action=ignore -q -r requirements.txt
+      && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-meditrace}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-meditrace}
+      DATA_KEY: ${DATA_KEY:?set DATA_KEY in .env (copy .env.example)}
+      INDEX_KEY: ${INDEX_KEY:?set INDEX_KEY in .env (copy .env.example)}
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./backend:/app/backend:ro
+      - pipcache:/root/.cache/pip
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:
+  pipcache:
