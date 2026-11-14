@@ -11,3 +11,6 @@ build/
 .idea/
 *.log
 ~$*.docx
+.coverage
+report.xml
+coverage.xml

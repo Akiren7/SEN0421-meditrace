@@ -8,7 +8,7 @@
 * **PLN-07 — Test plan** `docs/test/test-plan.md`: test items ARC-001…009, test levels, IEEE 1012 integrity levels and coverage targets, tagging convention (checked against `tools/trace/trace.py`), test case table TC-001…TC-024 with owner/sprint/status, entry/exit criteria, defect handling, environment.
 * **CI and config:** `pytest.ini` (`testpaths = tests`, `pythonpath = backend`, `-q`), `.gitattributes` (LF, binary types), `.github/workflows/ci.yml`: job `tests` (name kept) now runs `pytest --cov=backend/app --cov-branch --cov-report=term --junitxml=report.xml` and uploads `report.xml` (artifact `pytest-junit`); new job `frontend` (Node 22: `npm ci`, `npm test -- --run` with a Vitest JUnit file as artifact `vitest-junit`, `npm run build`).
 * **Merge dry run:** merged `origin/main` + Ege's `feature/PLN-03-risk-plan-alarm-core` + Barış's `feature/PLN-01-srs-sdp-trace` locally with my `pytest.ini`: 59 tests passed, 100 % line coverage of `backend/app`, and Barış's Compliance Reporter read the JUnit file (59 passed). With my frontend added, REQ-005/007/014/022/023 move from NO TEST to "OK (frontend, not in JUnit)".
-* PR: #<fill in after opening> — Closes #<PLN-06 issue>, Closes #<PLN-07 issue>.
+* PR: #9— Closes #6, Closes #7.
 
 ## Problems encountered and how they were handled
 
@@ -31,7 +31,7 @@
 
 ## Time spent
 
-* Approx. real hours this sprint: <fill in your real hours>
+* Approx. real hours this sprint: 6
 
 ## Open points for Sprint 3
 

@@ -6,7 +6,7 @@
 - **ARC-009 Compliance Reporter v0** (`tools/trace/`, REQ-016, RCM-010): standard-library CLI `python -m tools.trace.trace [--junit report.xml]` that reads the SRS, test docstring tags, Vitest names, `# Implements` tags and the pytest JUnit result and writes `docs/traceability.md`.
 - **TC-016 tests** (`tests/test_trace.py`, 11 tests, all passing): SRS parsing, tag reading (untagged tests ignored), NO TEST, FAILING, no-result handling, parametrized JUnit cases, Vitest names, CLI output and exit code.
 - **First generated `docs/traceability.md`**: 1/17 Must requirements have a passing test (only REQ-016) because no other member's work was merged yet — expected at this point and evidence for the report.
-- PR: #<fill in after opening> — Closes #1 (PLN-01), Closes #2 (PLN-02).
+- PR: #13— Closes #1 (PLN-01), Closes #2 (PLN-02).
 
 ## Problems encountered and how they were handled
 | # | Problem | Impact | How it was detected (test, CI, review, analysis) | What we did | Status |
@@ -24,7 +24,7 @@
 | 11 | My Windows user folder (`C:\Users\BARIŞ`) is itself an empty Git repository, so Git commands started from the Desktop treated the whole profile as untracked files. | Risk of committing in the wrong repository. | `git status` / `git rev-parse --show-toplevel` before cloning. | Cloned the project into its own folder and checked the top-level folder before every commit. | Workaround |
 
 ## Time spent
-- Approx. real hours this sprint: <fill in your real hours>
+- Approx. real hours this sprint: 8.5
 
 ## Open points for Sprint 3
 - With Mert: CI writes `--junitxml=report.xml`, runs `python -m tools.trace.trace --junit report.xml` and uploads `docs/traceability.md` as an artefact; later fail CI when a Must requirement is FAILING.
