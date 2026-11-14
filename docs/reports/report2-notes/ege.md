@@ -1,0 +1,36 @@
+# Report 2 notes — Ege Arıcan (Risk Management Lead)
+
+## Work done
+- **PLN-03 — Risk management plan** (`docs/risk/risk-management-plan.md`, ISO 14971 §4.4): scope and intended use, responsibilities, 5×5 acceptability matrix (1–4 acceptable, 5–9 ALARP, 10–25 unacceptable), method for software failures (assume the software can fail, estimate P of harm, update with Hazard Log data), RCM verification rule (every RCM → REQ → TC), activities per sprint.
+- **PLN-03 — Risk register** (`docs/risk/risk-register.md`, ISO 14971 §5–7): RISK-001 … RISK-010 carried over unchanged from Report 1, REQ/TC columns extended with SRS v2 requirements (REQ-018 – REQ-024).
+  - **RCM-002b (RISK-002), accepted and implemented:** rate-of-change artefact check — HR change > 60 bpm or SpO₂ drop > 15 points between two 1 Hz readings is flagged as a suspected artefact, not counted in the 5-reading window, LOW `ARTEFACT_SUSPECTED` event. No BP rule in v1.
+  - **RCM-005b (RISK-005), accepted for Sprint 3:** escalation of an unacknowledged HIGH alarm after 60 s; needs acknowledgement state (REQ-007) and WebSocket, so a hook was left in the engine.
+  - **Threshold rationale:** default limits checked against NEWS2 (RCP 2017) and the 2017 ACC/AHA BP guideline; strict `<` / `>` boundary rule; no critical bypass for BP in v1 (reasons documented).
+  - No S or P value changed in this sprint; RISK-009 re-evaluated because of RCM-002b (unchanged).
+- **ARC-003 Alarm Engine core** (`backend/app/alarm/models.py`, `engine.py`): pure Python, independent of FastAPI/DB. REQ-015 smart validation (MEDIUM after 5 consecutive valid violating readings, normal reading resets), critical bypass (immediate HIGH), REQ-003 data-loss alarm (`check_data_loss`, ≥ 10 s, raised once), RCM-002b, per-patient threshold override, one alarm episode per vital (no re-raise every second). Annotated with `# Implements REQ-xxx` / `# Controls RISK-xxx`.
+- **Tests** (`tests/test_alarm_engine.py`): 33 unit tests tagged TC-002, TC-003, TC-015 (incl. boundary tests and "artefact never masks a critical value"). Engine coverage 100 % lines and branches (integrity level 3 target ≥ 80 %).
+- PR **#12** — Closes #3 (PLN-03). Reviewed and approved by Bahadır. Commits: 808e229, 5fb4c62, f122a68, c13a1d9.
+- Prepared the PLN-06/07 delivery package for Mert in my Claude Code session (Mert applied, tested, committed and opened PR #9 himself; reviewed by Barış).
+
+## Problems encountered and how they were handled
+| # | Problem | Impact | How it was detected | What we did | Status |
+| - | ------- | ------- | ------------------- | ----------- | ------ |
+| 1 | The plausibility check (RCM-002) only removes values **outside** physiological ranges; typical artefacts (probe slipping, motion) produce **in-range** values that could start or feed the 5-reading window. | RISK-002 stayed ALARP (3×2); false alarms add to alarm fatigue (RISK-005). | Risk analysis review of RISK-002 (ISO 14971 §7.1: check whether a further practicable measure exists). | Designed and implemented RCM-002b (rate-of-change check); limits chosen from how monitors average HR/SpO₂; a fast SpO₂ **rise** is not checked because it cannot cause a false low-SpO₂ alarm. | Resolved (unit verified, TC-002) |
+| 2 | Conflict inside the new measure: a reading can be both a suspected artefact and a critical value. Suppressing it would hide a real deterioration. | New risk created by a risk control measure (ISO 14971 §7.5), same pattern as RISK-009. | Hazard analysis of RCM-002b while writing the engine. | Rule "critical bypass wins": the HIGH alarm is raised immediately and the LOW artefact event is emitted next to it; a suspected artefact neither counts nor resets the window. Test `test_artefact_never_masks_a_critical_value`. | Resolved |
+| 3 | The NEWS2 literature check showed two one-unit differences caused by the strict boundary rule: HR = 40 is non-critical in MediTrace (NEWS2: 3 points) and systolic = 90 is normal (NEWS2: 3 points). | Possible disagreement between documents and clinical references. | Literature comparison during the threshold rationale (PLN-03). | Kept the agreed numbers so SRS, engine, tests and dashboard stay consistent; documented the difference and raised it for a team decision (move to 41 / 91 or keep). | Open (team decision) |
+| 4 | RCM-005b (escalation after 60 s) could not be implemented in Sprint 2: it needs the acknowledgement state (REQ-007) and WebSocket push, which arrive in Sprint 3. | RISK-005 residual stays 3×2 (ALARP) for now. | Dependency analysis when planning the measure. | Accepted the measure, scheduled it for Sprint 3, left a documented hook in `engine.py`; the residual reduction will only be claimed after verification. | Planned (R3) |
+| 5 | Some tests verify only part of a requirement (TC-002 is split between the ingestion range check and the engine's RCM-002b; TC-015 covers the engine but not the dashboard). The Compliance Reporter could show a REQ as fully verified from a partial test. | Would reproduce RISK-010 (untested requirement reported as satisfied). | Review of the reporter rules against the risk register (RCM-010). | Raised to the Project & Standards Lead as open point 5 in the risk register; to be handled in the reporter in Sprint 3/4. | Open |
+| 6 | Data loss is only detected for patients that have sent at least one reading; a device that never starts sending is not caught. | Gap in RCM-001 (RISK-001) for the start-up case. | Unit-test design for `check_data_loss` (TC-003). | Documented as a known limitation; in Sprint 3 the patient is registered in the engine at device pairing. | Open (R3) |
+| 7 | One alarm episode per vital, not per direction: a jump from high to low (e.g. HR 130 → 45) keeps the alarm active but raises no new event with the new value (unless critical). | Dashboard may show an outdated value for an active alarm. | Edge-case analysis while writing the per-vital state. | Accepted for v1 (the jump is first flagged by RCM-002b and the vital stays in alarm); to be revised in Sprint 3 when alarm records carry the latest value. | Accepted (review in R3) |
+| 8 | Only previews of IEC 60601-1-8 were available for the alarm-priority rationale. | Weaker reference for priorities. | While writing the threshold rationale. | Used the preview plus NEWS2 and the ACC/AHA guideline; continues RSK-01. | Partially resolved |
+| 9 | Because the PLN-06/07 package for Mert was prepared in my session, my review of PR #9 would not have been independent (IEEE 1012). This notes file was also missing when PR #12 was merged. | Review independence and report evidence. | Team check against the merge plan (A10) and the sprint-closeout review. | Barış reviewed PR #9 instead of me; this notes file was added in the sprint closeout PR. | Resolved |
+
+## Time spent
+- Approx. real hours this sprint: 6.5
+
+## Open points for Sprint 3
+- Wire the Alarm Engine into ingestion (ARC-002) and add a 1 Hz `check_data_loss` scheduler; push alarms over WebSocket (REQ-004).
+- Acknowledgement (REQ-007) with persisted `Alarm` records and state; then RCM-005b escalation.
+- Register patients at pairing so data loss is detected before the first reading.
+- Hazard Log entries for ARTEFACT_SUSPECTED and DATA_LOSS; first P review with simulator fault-scenario data.
+- Team decision on HR 40 / systolic 90 boundaries.
