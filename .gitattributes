@@ -1,0 +1,8 @@
+# Normalise line endings in the repository to LF (removes the Windows
+# "LF will be replaced by CRLF" warnings; Git converts on checkout as needed).
+* text=auto eol=lf
+
+# Binary files: never convert or diff as text.
+*.png binary
+*.docx binary
+*.pdf binary
