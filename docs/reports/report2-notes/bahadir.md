@@ -11,7 +11,7 @@
 - **Docker Compose** (`docker-compose.yml`: `db` postgres:16 + `api` python:3.12-slim/uvicorn) and `.env.example` with dummy keys only.
 - **Tests:** 44 test functions / 73 test cases incl. parametrized (`tests/test_ingestion.py` TC-001, TC-002, TC-012, TC-013 + robustness smoke check; `tests/test_storage.py` TC-010, TC-020; `tests/test_simulator.py` TC-001). Full suite 74 passed locally (Python 3.12). Branch coverage measured once with coverage.py: `ingestion/router.py` and `ingestion/validation.py` 100 % (integrity level 3 target ≥ 80 %), every backend file ≥ 88 %.
 - **Merge check before the PR:** my branch merged locally with Ege's `feature/PLN-03-risk-plan-alarm-core` and Barış's `feature/PLN-01-srs-sdp-trace` → no file overlaps, 132 tests passed; Compliance Reporter dry run: REQ-001, 002, 010, 012, 013, 020 OK.
-- PR: #<fill in after opening> — Closes #4 (PLN-04), Closes #5 (PLN-05), part of #8 (PLN-08).
+- PR: #10 — Closes #4 (PLN-04), Closes #5 (PLN-05), part of #8 (PLN-08).
 
 ## Problems encountered and how they were handled
 | # | Problem | Impact | How it was detected (test, CI, review, analysis) | What we did | Status |
